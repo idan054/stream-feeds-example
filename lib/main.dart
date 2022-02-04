@@ -1,6 +1,7 @@
 import 'package:feeds_tutorial/dummy_app_user.dart';
 import 'package:feeds_tutorial/utils/utils.dart';
 import 'package:flutter/material.dart';
+import 'package:stream_feed/stream_feed.dart';
 
 import 'home.dart';
 
@@ -66,13 +67,18 @@ class _LoginScreenState extends State<LoginScreen> {
                     onPressed: () async {
                       context.showSnackbar('Loading User');
 
-                      //TODO(awesome-developer): implement load
+                      final _client = StreamFeedClient.connect("ay57s8swfnan", token: user.token);
+                   // final _client = StreamFeedClient.connect("ah48ckptkjvm", token: Token('gfcfa94ghkctn3du36s2d4nmqg9q24wtxhr56qd84pj7dum94ahhtedccj8q7wk4')); // My
+                      final _user = await _client.setUser(user.data!);
 
                       context.showSnackbar('User Loaded');
 
                       Navigator.of(context).pushReplacement(
                         MaterialPageRoute(
-                          builder: (_) => HomeScreen(),
+                          builder: (_) => ClientProvider( // Here we are wrapping our application using a client provider.
+                            client: _client,
+                            child: HomeScreen(streamUser: _user), // Pass the _user variable to the streamUser param
+                          ),
                         ),
                       );
                     },

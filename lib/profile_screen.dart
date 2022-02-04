@@ -1,25 +1,43 @@
 import 'package:feeds_tutorial/utils/utils.dart';
 import 'package:flutter/material.dart';
+import 'package:stream_feed/stream_feed.dart';
 
+import 'activity_item.dart';
 import 'add_activity_dialog.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({
     Key? key,
+    required this.streamUser,
   }) : super(key: key);
+
+  final User streamUser;
 
   @override
   _ProfileScreenState createState() => _ProfileScreenState();
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  late final StreamFeedClient _client;
+  bool _isLoading = true;
+  List<Activity> activities = <Activity>[];
+
+
   Future<void> _loadActivities({bool pullToRefresh = false}) async {
-    //TODO(awesome-developer): Implement load activities
+    if (!pullToRefresh) setState(() => _isLoading = true);
+
+    final userFeed = _client.flatFeed('user', widget.streamUser.id!);
+    final data = await userFeed.getActivities();
+    if (!pullToRefresh) _isLoading = false;
+    setState(() => activities = data);
   }
 
+
+  // lol its just regular init
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    _client = context.client;
     _loadActivities();
   }
 
@@ -35,18 +53,42 @@ class _ProfileScreenState extends State<ProfileScreen> {
           if (message != null) {
             context.showSnackbar('Posting Activity...');
 
-            // TODO(awesome-developer): Implement posting
+            final activity = Activity(
+              actor: createUserReference(widget.streamUser.id!),
+              // We wrap our user id in a method which formats ID
+              verb: 'tweet',
+              object: '1',
+              extraData: {
+                'tweet': message,
+              },
+            );
+            final userFeed = _client.flatFeed('user', widget.streamUser.id!);
+            await userFeed.addActivity(activity);
 
             context.showSnackbar('Activity Posted...');
             _loadActivities();
           }
         },
+
         child: Icon(Icons.add),
       ),
       body: Center(
         child: RefreshIndicator(
-            onRefresh: () => _loadActivities(pullToRefresh: true),
-            child: Text('No activities yet!')),
+          onRefresh: () => _loadActivities(pullToRefresh: true),
+          child: _isLoading
+              ? CircularProgressIndicator()
+              : activities.isEmpty
+              ? Text('No activities yet!')
+              : ListView.separated(
+                itemCount: activities.length,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                separatorBuilder: (_, __) => const Divider(),
+                itemBuilder: (_, index) {
+                  final activity = activities[index];
+                  return ActivityCard(activity: activity);
+            },
+          ),
+        ),
       ),
     );
   }

@@ -2,10 +2,15 @@ import 'package:feeds_tutorial/dummy_app_user.dart';
 import 'package:feeds_tutorial/utils/utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:stream_feed/stream_feed.dart';
 
 class PeopleScreen extends StatefulWidget {
-  const PeopleScreen({Key? key}) : super(key: key);
+  const PeopleScreen({
+    Key? key,
+    required this.streamUser,
+  }) : super(key: key);
 
+  final User streamUser;
   @override
   _PeopleScreenState createState() => _PeopleScreenState();
 }
@@ -13,7 +18,10 @@ class PeopleScreen extends StatefulWidget {
 class _PeopleScreenState extends State<PeopleScreen> {
   @override
   Widget build(BuildContext context) {
-    final users = List<DummyAppUser>.from(DummyAppUser.values);
+    // final users = List<DummyAppUser>.from(DummyAppUser.values);
+    final _client = context.client;
+    final users = List<DummyAppUser>.from(DummyAppUser.values)
+      ..removeWhere((it) => it.id == widget.streamUser.id);
 
     final followDialog = CupertinoAlertDialog(
       title: Text('Follow User?'),
@@ -47,9 +55,15 @@ class _PeopleScreenState extends State<PeopleScreen> {
                 if (result != null) {
                   context.showSnackbar('Following User...');
 
-                  //TODO(awesome-developer): Implement Follow action.
+                  final currentUserFeed = _client.flatFeed(
+                    'timeline',
+                    widget.streamUser.id!,
+                  );
+                  final selectedUserFeed = _client.flatFeed('user', user.id!);
+                  await currentUserFeed.follow(selectedUserFeed);
 
                   context.showSnackbar('Followed User...');
+
                 }
               },
               child: ListTile(

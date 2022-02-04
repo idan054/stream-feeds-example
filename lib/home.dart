@@ -2,9 +2,12 @@ import 'package:feeds_tutorial/people_screen.dart';
 import 'package:feeds_tutorial/profile_screen.dart';
 import 'package:feeds_tutorial/timeline_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:stream_feed/stream_feed.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({Key? key,required this.streamUser}) :super(key: key);
+
+  final User streamUser;
 
   @override
   _HomeScreenState createState() => _HomeScreenState();
@@ -28,9 +31,9 @@ class _HomeScreenState extends State<HomeScreen> {
       body: IndexedStack(
         index: _currentIndex,
         children: [
-          TimelineScreen(),
-          ProfileScreen(),
-          PeopleScreen(),
+          TimelineScreen(streamUser: widget.streamUser),
+          ProfileScreen(streamUser: widget.streamUser),
+          PeopleScreen(streamUser: widget.streamUser),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
