@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:stream_feed/stream_feed.dart';
 
@@ -20,14 +22,30 @@ class _TimelineScreenState extends State<TimelineScreen> {
   List<Activity> activities = <Activity>[];
 
   Future<void> _loadActivities({bool pullToRefresh = false}) async {
-    if (!pullToRefresh) setState(() => _isLoading = true);
+    try {
+      if (!pullToRefresh) setState(() => _isLoading = true);
 
-    final userFeed = _client.flatFeed('timeline', widget.streamUser.id!); //Modified
-    final data = await userFeed.getActivities();
+      final userFeed =
+          _client.flatFeed('timeline', widget.streamUser.id!); //Modified
+      final data = await userFeed.getActivities();
+      log(data.toString());
 
-    if (!pullToRefresh) _isLoading = false;
+      if (!pullToRefresh) _isLoading = false;
 
-    setState(() => activities = data);
+      setState(() => activities = data);
+    } catch (e) {
+      _isLoading = false;
+      setState(() {});
+      log(e.toString());
+    }
+  }
+
+  @override
+  void initState() {
+    if (mounted) {
+      _loadActivities();
+    }
+    super.initState();
   }
 
   @override
@@ -44,26 +62,25 @@ class _TimelineScreenState extends State<TimelineScreen> {
         child: _isLoading
             ? Center(child: CircularProgressIndicator())
             : activities.isEmpty
-            ? Column(
-          children: [
-            Text('No activities yet!'),
-            ElevatedButton(
-              onPressed: _loadActivities,
-              child: Text('Reload'),
-            )
-          ],
-        )
-            : ListView.separated(
-          itemCount: activities.length,
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          separatorBuilder: (_, __) => const Divider(),
-          itemBuilder: (_, index) {
-            final activity = activities[index];
-            return ActivityCard(activity: activity);
-          },
-        ),
+                ? Column(
+                    children: [
+                      Text('No activities yet!'),
+                      ElevatedButton(
+                        onPressed: _loadActivities,
+                        child: Text('Reload'),
+                      )
+                    ],
+                  )
+                : ListView.separated(
+                    itemCount: activities.length,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    separatorBuilder: (_, __) => const Divider(),
+                    itemBuilder: (_, index) {
+                      final activity = activities[index];
+                      return ActivityCard(activity: activity);
+                    },
+                  ),
       ),
     );
   }
-
 }
