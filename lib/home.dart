@@ -32,7 +32,7 @@ class _HomeScreenState extends State<HomeScreen> {
         index: _currentIndex,
         children: [
           TimelineScreen(streamUser: widget.streamUser),
-          ProfileScreen(streamUser: widget.streamUser),
+          // ProfileScreen(streamUser: widget.streamUser),
           PeopleScreen(streamUser: widget.streamUser),
         ],
       ),

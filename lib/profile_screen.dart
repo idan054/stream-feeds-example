@@ -26,7 +26,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future<void> _loadActivities({bool pullToRefresh = false}) async {
     if (!pullToRefresh) setState(() => _isLoading = true);
 
-    final userFeed = _client.flatFeed('user', widget.streamUser.id!);
+    final userFeed = _client.flatFeed('test_uesr', widget.streamUser.id!);
     final data = await userFeed.getActivities();
     if (!pullToRefresh) _isLoading = false;
     setState(() => activities = data);
@@ -62,7 +62,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 'tweet': message,
               },
             );
-            final userFeed = _client.flatFeed('user', widget.streamUser.id!);
+            final userFeed = _client.flatFeed('test_uesr', widget.streamUser.id!);
             await userFeed.addActivity(activity);
 
             context.showSnackbar('Activity Posted...');
